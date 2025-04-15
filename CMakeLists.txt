@@ -12,6 +12,9 @@ add_executable(main src/main.c
                     src/modes/csv.c
                     src/modes/pp.c
                     src/modes/pv.c
-                    src/state.c)
+                    src/state.c
+                    src/pdo.c
+                    src/dc.c
+                    src/registers.c)
 target_link_libraries(main /usr/local/lib/libsoem.a)
 include_directories(include)

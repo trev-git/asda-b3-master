@@ -1,8 +1,8 @@
 #!/bin/sh
 
 rm -rf build/
-mkdir -p build/
-cd build
-cmake ..
-cmake --build . --parallel
-cd ..
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
+cp build/compile_commands.json .
+sudo chown root ./build/main
+sudo chmod +s ./build/main

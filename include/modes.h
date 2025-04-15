@@ -25,14 +25,14 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
     uint8_t mode;
-    uint16_t control_word;
     int32_t target_position;
-} output_csv_t;
+    uint16_t control_word;
+} output_csp_t;
 
 typedef struct __attribute__((packed)) {
     uint16_t status_word;
     int32_t actual_target;
-} input_csv_t;
+} input_csp_t;
 
 int pp_pdo(uint16_t slave);
 int pv_pdo(uint16_t slave);

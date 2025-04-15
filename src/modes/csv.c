@@ -13,15 +13,12 @@ int csv_pdo(uint16_t slave)
     sdo_write8(slave, RXPDO, 0, 0);
     sdo_write8(slave, TXPDO, 0, 0);
 
-    /* map RxPDO for Profile Velocity mode */
-    sdo_write32(slave, RXPDO, 1, ((PROFILE_MODE << 16) + 0x08));
-    sdo_write32(slave, RXPDO, 2, ((CONTROL_WORD << 16) + 0x10));
-    sdo_write32(slave, RXPDO, 3, ((TARGET_VELOCITY << 16) + 0x20));
-    sdo_write32(slave, RXPDO, 4, ((PROFILE_ACCEL << 16) + 0x20));
-    sdo_write32(slave, RXPDO, 5, ((PROFILE_DECEL << 16) + 0x20));
-    sdo_write8(slave, RXPDO, 0, 5);
+    /* map RxPDO for Cyclic Synchronous Velocity mode */
+    sdo_write32(slave, RXPDO, 1, ((CONTROL_WORD << 16) + 0x10));
+    sdo_write32(slave, RXPDO, 2, ((TARGET_VELOCITY << 16) + 0x20));
+    sdo_write8(slave, RXPDO, 0, 2);
 
-    /* map TxPDO for Profile Velocity mode */
+    /* map TxPDO for Cyclic Synchronous Velocity mode */
     sdo_write32(slave, TXPDO, 1, ((STATUS_WORD << 16) + 0x10));
     sdo_write32(slave, TXPDO, 2, ((POSITION_ACTUAL << 16) + 0x20));
     sdo_write8(slave, TXPDO, 0, 2);
