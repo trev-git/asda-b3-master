@@ -1,5 +1,4 @@
-#include <soem/ethercat.h>
-#include <soem/ethercatbase.h>
+#include <soem/soem.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -12,11 +11,11 @@
  * @returns Index of the slave chosen or -1 if no slave supports DC.
  */
 
-int get_reference_clock()
+int get_reference_clock(ecx_contextt *ctx)
 {
-    for (int i = 1; i < ec_slavecount; i++)
+    for (int i = 1; i < ctx->slavecount; i++)
     {
-        if (ec_slave[ec_slavecount].hasdc)
+        if (ctx->slavelist[i].hasdc)
         {
             return i;
         }
@@ -26,14 +25,14 @@ int get_reference_clock()
 
 void set_clock(ec_master *master)
 {
-    clock_gettime(CLOCK_REALTIME, &master->clock);
+    clock_gettime(CLOCK_MONOTONIC, &master->clock);
 }
 
-void synchronize(ec_master *master)
+void synchronize(ecx_contextt *ctx, ec_master *master)
 {
     int64_t reference_time;
     clock_gettime(CLOCK_REALTIME, &master->clock);
-    ec_FPRD(0x1001, 0x910, sizeof(long), &reference_time, EC_TIMEOUTRET);
+    ecx_FPRD(&ctx->port, 0x1001, 0x910, sizeof(long), &reference_time, EC_TIMEOUTRET);
     time_t master_time = master->clock.tv_sec * NS_PER_SEC + master->clock.tv_nsec;
     time_t adjusted_epoch = master_time - EC_EPOCH * NS_PER_SEC;
     printf("adjusted_epoch=%ld\n", adjusted_epoch);
@@ -41,7 +40,7 @@ void synchronize(ec_master *master)
     printf("difference: %ldns\n", adjusted_epoch - reference_time);
 }
 
-struct timespec add_timespec(struct timespec *ts, int64_t add_time)
+void add_timespec(struct timespec *ts, int64_t add_time)
 {
     int64 sec, nsec;
     nsec = add_time % NS_PER_SEC;

@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
-int write_pdo(int timeout);
+#include <soem/soem.h>
+
+int write_pdo(ecx_contextt *ctx, int timeout);
 
 #endif // PDO_H

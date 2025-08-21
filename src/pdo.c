@@ -1,18 +1,19 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <soem/ethercat.h>
-#include <soem/osal.h>
-
 #include "pdo.h"
 
-int write_pdo(int timeout)
+#include <stdio.h>
+#include <stdint.h>
+
+#include <soem/soem.h>
+#include <soem/osal.h>
+
+int write_pdo(ecx_contextt *ctx, int timeout)
 {
-    if (ec_send_processdata() <= 0)
+    if (ecx_send_processdata(ctx) <= 0)
     {
         fprintf(stderr, "[WARN] Couldn't transmit PDO!\n");
         return -1;
     }
-    int wkc = ec_receive_processdata(EC_TIMEOUTRET);
+    int wkc = ecx_receive_processdata(ctx, EC_TIMEOUTRET);
     if (timeout)
         osal_usleep(timeout);
     return wkc;

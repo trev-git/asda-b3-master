@@ -1,7 +1,8 @@
 #ifndef MASTER_H
 #define MASTER_H
 
-#include <soem/ethercat.h>
+#include <soem/soem.h>
+#include <soem/osal.h>
 #include <stdint.h>
 #include <time.h>
 #include "modes.h"

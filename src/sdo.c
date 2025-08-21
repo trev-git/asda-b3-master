@@ -1,46 +1,44 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <soem/ethercat.h>
-
 #include "sdo.h"
 
-uint8_t sdo_read8(int slave, uint16_t index, uint8_t subindex)
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include <soem/soem.h>
+
+bool sdo_read8(ecx_contextt *ctx, int slave, uint16_t index, uint8_t subindex, uint8_t *val)
 {
-    uint8_t val = 0;
     int size = sizeof(val);
-    if (ec_SDOread(slave, index, subindex, FALSE, &size, &val, EC_TIMEOUTSAFE) == 0)
+    if (ecx_SDOread(ctx, slave, index, subindex, FALSE, &size, val, EC_TIMEOUTSAFE) == 0)
     {
         fprintf(stderr, "Failed to read at %04x:%02x!\n", index, subindex);
     }
     return val;
 }
 
-uint16_t sdo_read16(int slave, uint16_t index, uint8_t subindex)
+bool sdo_read16(ecx_contextt *ctx, int slave, uint16_t index, uint8_t subindex, uint16_t *val)
 {
-    uint16_t val = 0;
     int size = sizeof(val);
-    if (ec_SDOread(slave, index, subindex, FALSE, &size, &val, EC_TIMEOUTSAFE) == 0)
+    if (ecx_SDOread(ctx, slave, index, subindex, FALSE, &size, val, EC_TIMEOUTSAFE) == 0)
     {
         fprintf(stderr, "Failed to read at %04x:%02x!\n", index, subindex);
     }
     return val;
 }
 
-uint32_t sdo_read32(int slave, uint16_t index, uint8_t subindex)
+bool sdo_read32(ecx_contextt *ctx, int slave, uint16_t index, uint8_t subindex, uint32_t *val)
 {
-    uint32_t val = 0;
     int size = sizeof(val);
-    if (ec_SDOread(slave, index, subindex, FALSE, &size, &val, EC_TIMEOUTSAFE) == 0)
+    if (ecx_SDOread(ctx, slave, index, subindex, FALSE, &size, val, EC_TIMEOUTSAFE) == 0)
     {
         fprintf(stderr, "Failed to read at %04x:%02x!\n", index, subindex);
     }
     return val;
 }
 
-bool sdo_write8(int slave, uint16_t index, uint8_t subindex, uint8_t val)
+bool sdo_write8(ecx_contextt *ctx, int slave, uint16_t index, uint8_t subindex, uint8_t val)
 {
-    if (ec_SDOwrite(slave, index, subindex, FALSE, sizeof(val), &val, EC_TIMEOUTSAFE) == 0)
+    if (ecx_SDOwrite(ctx, slave, index, subindex, FALSE, sizeof(val), &val, EC_TIMEOUTSAFE) == 0)
     {
         fprintf(stderr, "Failed to write %02x to %04x:%02x!\n", val, index, subindex);
         return false;
@@ -48,9 +46,9 @@ bool sdo_write8(int slave, uint16_t index, uint8_t subindex, uint8_t val)
     return true;
 }
 
-bool sdo_write16(int slave, uint16_t index, uint8_t subindex, uint16_t val)
+bool sdo_write16(ecx_contextt *ctx, int slave, uint16_t index, uint8_t subindex, uint16_t val)
 {
-    if (ec_SDOwrite(slave, index, subindex, FALSE, sizeof(val), &val, EC_TIMEOUTSAFE) == 0)
+    if (ecx_SDOwrite(ctx, slave, index, subindex, FALSE, sizeof(val), &val, EC_TIMEOUTSAFE) == 0)
     {
         fprintf(stderr, "Failed to write %04x to %04x:%02x!\n", val, index, subindex);
         return false;
@@ -58,9 +56,9 @@ bool sdo_write16(int slave, uint16_t index, uint8_t subindex, uint16_t val)
     return true;
 }
 
-bool sdo_write32(int slave, uint16_t index, uint8_t subindex, uint32_t val)
+bool sdo_write32(ecx_contextt *ctx, int slave, uint16_t index, uint8_t subindex, uint32_t val)
 {
-    if (ec_SDOwrite(slave, index, subindex, FALSE, sizeof(val), &val, EC_TIMEOUTSAFE) == 0)
+    if (ecx_SDOwrite(ctx, slave, index, subindex, FALSE, sizeof(val), &val, EC_TIMEOUTSAFE) == 0)
     {
         fprintf(stderr, "Failed to write %08x to %04x:%02x!\n", val, index, subindex);
         return false;

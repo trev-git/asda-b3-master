@@ -2,13 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
-#include <soem/ethercat.h>
+
 #include <soem/osal.h>
+#include <soem/soem.h>
 
 #include "interface.h"
 #include "master.h"
 
 static pthread_t thread1;
+
+ecx_contextt ctx = { 0 };
 
 int main(int argc, char **argv)
 {
@@ -18,7 +21,7 @@ int main(int argc, char **argv)
         print_all_interfaces(stderr);
         exit(EXIT_FAILURE);
     }
-
+    
     if (!is_valid_interface(argv[1]))
     {
         fprintf(stderr, "Invalid interface!\n");

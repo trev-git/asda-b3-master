@@ -1,14 +1,16 @@
-#include <soem/ethercat.h>
-#include <stdint.h>
 #include "state.h"
 
-uint16_t set_ec_state(uint16_t slave, ec_state state)
+#include <stdint.h>
+
+#include <soem/soem.h>
+
+uint16_t set_ec_state(ecx_contextt *ctx, uint16_t slave, ec_state state)
 {
-    ec_slave[slave].state = state;
-    ec_writestate(slave);
+    ctx->slavelist[slave].state = state;
+    ecx_writestate(ctx, slave);
     do {
-        ec_send_processdata();
-        ec_receive_processdata(EC_TIMEOUTRET);
-    } while (ec_statecheck(slave, state, EC_TIMEOUTSTATE) != state);
-    return ec_slave[slave].state;
+        ecx_send_processdata(ctx);
+        ecx_receive_processdata(ctx, EC_TIMEOUTRET);
+    } while (ecx_statecheck(ctx, slave, state, EC_TIMEOUTSTATE) != state);
+    return ctx->slavelist[slave].state;
 }

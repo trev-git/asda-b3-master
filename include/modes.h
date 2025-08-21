@@ -2,6 +2,7 @@
 #define MODE_H
 
 #include <stdint.h>
+#include <soem/soem.h>
 
 #define MODE_PROFILE_POSITION 0x01
 #define MODE_CYCLIC_SYNCHRONOUS_POSITION 0x08
@@ -36,7 +37,7 @@ typedef struct __attribute__((packed)) {
 
 int pp_pdo(uint16_t slave);
 int pv_pdo(uint16_t slave);
-int csp_pdo(uint16_t slave);
+int csp_pdo(ecx_contextt *ctx, uint16_t slave);
 int csv_pdo(uint16_t slave);
 
 #endif // MODE_H
