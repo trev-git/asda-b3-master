@@ -28,6 +28,9 @@ volatile static int target_position;
 
 extern ecx_contextt ctx;
 
+static output_csp_t *rx[3];
+static input_csp_t *tx[3];
+
 void signal_handler(int sig)
 {
     if (sig == SIGTERM || sig == SIGINT)
@@ -68,14 +71,24 @@ int setup(const char *ifname)
     printf("Found %d slaves.\n", ctx.slavecount);
     uint16_t state = set_ec_state(&ctx, 0, EC_STATE_PRE_OP);
 
-    ctx.slavelist[1].PO2SOconfig = csp_pdo;
+    for (int i = 1; i <= ctx.slavecount; i++)
+        ctx.slavelist[i].PO2SOconfig = csp_pdo;
+
     ecx_configdc(&ctx);
-    ecx_dcsync0(&ctx, 1, TRUE, cycletime, 0);
+
+    for (int i = 1; i <= ctx.slavecount; i++)
+        if (ctx.slavelist[i].hasdc)
+            ecx_dcsync0(&ctx, i, TRUE, cycletime, 0);
+
     // master.reference_clock = get_reference_clock();
     bzero(master.io_map, 4096);
     ecx_config_map_group(&ctx, master.io_map, 0);
-    master.outputs = (output_csp_t *)ctx.slavelist[1].outputs;
-    master.inputs = (input_csp_t *)ctx.slavelist[1].inputs;
+
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        rx[i-1] = (output_csp_t *)ctx.slavelist[i].outputs;
+        tx[i-1] = (input_csp_t *)ctx.slavelist[i].inputs;
+    }
     printf("Set state to PRE_OP\n");
     // SDO 0x1c32 0x01 - отличное от нуля
 #pragma endregion
@@ -88,11 +101,20 @@ int setup(const char *ifname)
 #pragma region Operational state
     set_ec_state(&ctx, 0, EC_STATE_OPERATIONAL);
 
-    master.outputs->mode = MODE_CYCLIC_SYNCHRONOUS_POSITION;
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        rx[i-1]->mode = MODE_CYCLIC_SYNCHRONOUS_POSITION;
+    }
     write_pdo(&ctx, cycletime / 1000);
-    master.outputs->target_position = master.inputs->actual_target + 100;
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        rx[i-1]->target_position = tx[i-1]->actual_target + 100;
+    }
     write_pdo(&ctx, cycletime / 1000);
-    sdo_write32(&ctx, 1, 0x607f, 0, 40000);
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        sdo_write32(&ctx, i, 0x607f, 0, 40000);
+    }
 
     osal_thread_create_rt(&ec_thread, 64 * 1024, ecatthread, (void *)&cycletime);
     printf("Configured all slaves and set Operational state\n");
@@ -103,27 +125,36 @@ int setup(const char *ifname)
 
 void run()
 {
-    master.outputs->control_word = 0b00110;
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        rx[i-1]->control_word = 0b00110;
+    }
     write_pdo(&ctx, cycletime / 1000);
-    master.outputs->control_word = 0b00111;
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        rx[i-1]->control_word = 0b00111;
+    }
     write_pdo(&ctx, cycletime / 1000);
-    master.outputs->control_word = 0b01111;
+    for (int i = 1; i <= ctx.slavecount; i++)
+    {
+        rx[i-1]->control_word = 0b01111;
+    }
     write_pdo(&ctx, cycletime / 1000);
 
     dorun = 1;
     for(int i = 1; i <= 1000; i++)
     {
         printf("i: %ld ", dorun);
-        printf(" O:");
-        for(int j = 0 ; j < ctx.slavelist[1].Obytes; j++)
-        {
-            printf(" %2.2x", ctx.slavelist[1].outputs[j]);
-        }
-        printf(" I:");
-        for(int j = 0 ; j < ctx.slavelist[1].Ibytes; j++)
-        {
-            printf(" %016b", ctx.slavelist[1].inputs[j]);
-        }
+        // printf(" O:");
+        // for(int j = 0 ; j < ctx.slavelist[1].Obytes; j++)
+        // {
+        //     printf(" %2.2x", ctx.slavelist[1].outputs[j]);
+        // }
+        // printf(" I:");
+        // for(int j = 0 ; j < ctx.slavelist[1].Ibytes; j++)
+        // {
+        //     printf(" %016b", ctx.slavelist[1].inputs[j]);
+        // }
         printf("\r");
         fflush(stdout);
         osal_usleep(20000);
@@ -173,9 +204,12 @@ OSAL_THREAD_FUNC_RT ecatthread(void *ptr)
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, &tleft);
         if (dorun>0)
         {
-            if (((output_csp_t *)ctx.slavelist[1].outputs)->control_word == 0b1111)
+            for (int i = 1; i <= ctx.slavecount; i++)
             {
-                ((output_csp_t *)ctx.slavelist[1].outputs)->target_position += 100;
+                if (((output_csp_t *)ctx.slavelist[i].outputs)->control_word == 0b1111)
+                {
+                    ((output_csp_t *)ctx.slavelist[i].outputs)->target_position += 100;
+                }
             }
 
             // printf("pos=%d\n", master.outputs->target_position);
